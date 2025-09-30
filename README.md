@@ -4,74 +4,7 @@ A Django REST API for creating and booking events with concurrency-safe reservat
 
 ---
 
-## 1. Model Schema
-
-### Models
-
-- **User** (Django default `auth.User`)
-- **Event**
-  - `id`: AutoField
-  - `title`: CharField
-  - `description`: TextField
-  - `start_time`: DateTimeField
-  - `end_time`: DateTimeField
-  - `capacity`: IntegerField
-  - `seats_remaining`: IntegerField
-  - `organizer`: ForeignKey(User)
-- **Reservation**
-  - `id`: AutoField
-  - `user`: ForeignKey(User)
-  - `event`: ForeignKey(Event)
-  - `created_at`: DateTimeField
-
-### Diagram (Mermaid)
-```mermaid
-classDiagram
-    User <|-- Event : organizer
-    User <|-- Reservation : user
-    Event <|-- Reservation : event
-
-    class User {
-        id
-        username
-        email
-    }
-
-    class Event {
-        id
-        title
-        description
-        start_time
-        end_time
-        show_time
-        capacity
-        seats_remaining
-        organizer_id
-    }
-
-    class Reservation {
-        id
-        user_id
-        event_id
-        created_at
-    }
-```
-
-## 2. API Endpoints
-HTTP Method	URL	Description	Auth Required
-POST	/api/signup/	Create a new user account	No
-POST	/api/login/	Obtain authentication token	No
-GET	/api/events/	List all events	Yes
-POST	/api/events/	Create a new event	Yes
-GET	/api/events/{id}/	Retrieve event details	Yes
-PUT/PATCH	/api/events/{id}/	Update an event (organizer only)	Yes
-DELETE	/api/events/{id}/	Delete an event (organizer only)	Yes
-GET	/api/events/{id}/reservations/	View reservations for an event (organizer only)	Yes
-GET	/api/reservations/	List user reservations	Yes
-POST	/api/reservations/	Create reservation for an event	Yes
-DELETE	/api/reservations/{id}/	Cancel a reservation	Yes
-
-## 3. Setup Instructions
+## 1. Setup Instructions
 ### Docker
 **Requirements**
 - Docker
@@ -143,7 +76,7 @@ Note:
 Concurrency Test for reservation will only pass when we are using postgresql
 
 
-## 4. Design Choices
+## 2. Design Choices
 **i. Data Modelling**
 - **User**:
   Based on Django’s built-in `User` model.
@@ -155,13 +88,56 @@ Concurrency Test for reservation will only pass when we are using postgresql
   - Linked to an **organizer (User)**.
   - `capacity` defines the maximum allowed participants.
   - `seats_remaining` is updated atomically during bookings/cancellations.
+  - `title` CharField - Title for event
+  - `description` TextField - Description of the event
+  - `start_time` DateTimeField - Show Start time
+  - `end_time` DateTimeField - Show end time
+  - `show_time` DateTimeField - Show time, entry time?
+  - `capacity` IntegerField - Total Capacity of the show
+  - `seats_remaining` IntegerField - Seats remaining to be booked
+  - `organizer` ForeignKey(User) - The one who created the event
 
 - **Reservation**:
   Explicit join model between **User** and **Event**.
   - Stores who reserved which event.
   - Enforces uniqueness via `unique_together (user, event)` to prevent duplicate bookings.
   - Handles business logic like decrementing available seats when created and restoring them when canceled.
+  - Fields:
+    - `user`: ForeignKey(User)
+    - `event`: ForeignKey(Event)
+    - `created_at`: DateTimeField
+**Diagram**
+```mermaid
+classDiagram
+    User <|-- Event : organizer
+    User <|-- Reservation : user
+    Event <|-- Reservation : event
 
+    class User {
+        id
+        username
+        email
+    }
+
+    class Event {
+        id
+        title
+        description
+        start_time
+        end_time
+        show_time
+        capacity
+        seats_remaining
+        organizer_id
+    }
+
+    class Reservation {
+        id
+        user_id
+        event_id
+        created_at
+    }
+```
 **ii. Concurrency Handling**
 - **Atomic Transactions**:
   Reservation creation is wrapped in a `transaction.atomic()` block. This ensures that seat decrement and reservation creation happen as a single unit.
@@ -175,7 +151,7 @@ Concurrency Test for reservation will only pass when we are using postgresql
   ).update(seats_remaining=F('seats_remaining') - 1)
   ```
 
-## 5. Swagger API Documentation
+## 3. Swagger API Documentation
 Swagger docs will be available at:
 ```
 http://localhost:8000/docs/swagger/
