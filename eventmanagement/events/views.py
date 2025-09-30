@@ -21,18 +21,26 @@ class EventViewSet(viewsets.ModelViewSet):
     Anyone can view the list of events and event details.
     Only the organizer can view all reservations for their events.
     """
+
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOrganizerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOrganizerOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(organizer=self.request.user)
 
-    @action(detail=True, methods=['get'], url_path='reservations')
+    @action(detail=True, methods=["get"], url_path="total-reservations")
     def reservations(self, request, pk=None):
+        """
+        Retrieve the total number of reservations for the event.
+        Only the organizer can access this endpoint.
+        """
         event = self.get_object()
         if event.organizer != request.user:
-            return Response({'detail': 'Not authorized.'}, status=403)
+            return Response(
+                {"detail": "Not authorized to access this event reservations details."},
+                status=403,
+            )
         reservations = Reservation.objects.filter(event=event)
         serializer = ReservationSerializer(reservations, many=True)
         return Response(serializer.data)

@@ -16,17 +16,18 @@ class ReservationSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "user", "event", "created_at"]
 
     def validate(self, attrs):
-        user = self.context['request'].user
+        user = self.context["request"].user
         event = attrs.get("event_id")
 
         if Reservation.objects.filter(user=user, event=event).exists():
-            raise serializers.ValidationError("You have already made a reservation for this event.")
+            raise serializers.ValidationError(
+                "You have already made a reservation for this event."
+            )
         if event.seats_remaining <= 0:
             raise serializers.ValidationError("No seats remaining for this event.")
         return attrs
 
     def create(self, validated_data):
         return Reservation.objects.create(
-            user=self.context['request'].user,
-            event=validated_data["event_id"]
+            user=self.context["request"].user, event=validated_data["event_id"]
         )

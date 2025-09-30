@@ -15,23 +15,55 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Event',
+            name="Event",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255)),
-                ('description', models.TextField(blank=True)),
-                ('start_time', models.DateTimeField()),
-                ('end_time', models.DateTimeField()),
-                ('show_time', models.DateTimeField()),
-                ('capacity', models.PositiveIntegerField()),
-                ('seats_remaining', models.IntegerField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('event_type', models.CharField(blank=True, choices=[('CONCERT', 'Concert'), ('CONFERENCE', 'Conference'), ('WORKSHOP', 'Workshop'), ('MEETUP', 'Meetup'), ('OTHER', 'Other')], max_length=100)),
-                ('organizer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_events', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=255)),
+                ("description", models.TextField(blank=True)),
+                ("start_time", models.DateTimeField()),
+                ("end_time", models.DateTimeField()),
+                ("show_time", models.DateTimeField()),
+                ("capacity", models.PositiveIntegerField()),
+                ("seats_remaining", models.IntegerField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "event_type",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("CONCERT", "Concert"),
+                            ("CONFERENCE", "Conference"),
+                            ("WORKSHOP", "Workshop"),
+                            ("MEETUP", "Meetup"),
+                            ("OTHER", "Other"),
+                        ],
+                        max_length=100,
+                    ),
+                ),
+                (
+                    "organizer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="created_events",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'indexes': [models.Index(fields=['start_time'], name='events_even_start_t_c2d277_idx')],
+                "indexes": [
+                    models.Index(
+                        fields=["start_time"], name="events_even_start_t_c2d277_idx"
+                    )
+                ],
             },
         ),
     ]

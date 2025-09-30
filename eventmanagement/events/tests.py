@@ -10,7 +10,9 @@ User = get_user_model()
 class EventAPITestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        self.organizer = User.objects.create_user(username="organizer", password="pass123")
+        self.organizer = User.objects.create_user(
+            username="organizer", password="pass123"
+        )
         self.user = User.objects.create_user(username="user", password="pass123")
         self.event = Event.objects.create(
             title="Test Event",
@@ -24,17 +26,23 @@ class EventAPITestCase(APITestCase):
         )
 
     def test_event_list(self):
-        """Anyone logged in can list events."""
-        self.client.force_authenticate(user=self.user)
+        """Anyone can list events."""
         url = reverse("event-list")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data['results'][0]["title"], "Test Event")
+        self.assertEqual(resp.data["results"][0]["title"], "Test Event")
 
-    def test_only_organizer_can_create_event(self):
+    def test_create_event(self):
         url = reverse("event-list")
-        payload = {"title": "Hackathon", "description": "Code .", "seats_remaining": 5, "show_time": "2030-05-01T09:00:00Z",
-                   "start_time": "2030-05-01T10:00:00Z", "end_time": "2030-05-01T12:00:00Z", "capacity": 5}
+        payload = {
+            "title": "Hackathon",
+            "description": "Code .",
+            "seats_remaining": 5,
+            "show_time": "2030-05-01T09:00:00Z",
+            "start_time": "2030-05-01T10:00:00Z",
+            "end_time": "2030-05-01T12:00:00Z",
+            "capacity": 5,
+        }
 
         self.client.force_authenticate(user=self.user)
         resp = self.client.post(url, payload, format="json")
@@ -44,7 +52,7 @@ class EventAPITestCase(APITestCase):
     def test_only_organizer_can_update_event(self):
         url = reverse("event-detail", args=[self.event.id])
 
-        # Non-organizer
+        # user
         self.client.force_authenticate(user=self.user)
         resp = self.client.patch(url, {"title": "Updated Name"}, format="json")
         self.assertEqual(resp.status_code, 403)
@@ -59,7 +67,7 @@ class EventAPITestCase(APITestCase):
         Reservation.objects.create(user=self.user, event=self.event)
         url = reverse("event-reservations", args=[self.event.id])
 
-        # Non-organizer
+        # user
         self.client.force_authenticate(user=self.user)
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 403)

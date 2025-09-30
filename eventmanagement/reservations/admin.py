@@ -4,4 +4,4 @@ from .models import Event, Reservation
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'event')
+    list_display = ("user", "event")

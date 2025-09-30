@@ -13,7 +13,9 @@ class EventType(models.TextChoices):
 
 
 class Event(models.Model):
-    organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_events")
+    organizer = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="created_events"
+    )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     start_time = models.DateTimeField()
@@ -27,11 +29,10 @@ class Event(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['start_time']),
+            models.Index(fields=["start_time"]),
         ]
 
     def save(self, *args, **kwargs):
         if self.pk is None and self.seats_remaining is None:
             self.seats_remaining = self.capacity
         super().save(*args, **kwargs)
-
